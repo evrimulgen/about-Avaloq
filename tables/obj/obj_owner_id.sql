@@ -1,3 +1,6 @@
+--
+-- Compare with sec_owner_id
+--
 select /*+ parallel(16) */
 -- count(*),
    substr(owner_typ.name    , 1, 20)           owner_typ,

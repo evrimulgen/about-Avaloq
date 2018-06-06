@@ -2,6 +2,8 @@
 --  sec_owner_id seems to point to the container
 --  in which a position is.
 --
+--  Compare with obj_owner_id
+--
 select /* + parallel(16) */ *
 from
   obj
