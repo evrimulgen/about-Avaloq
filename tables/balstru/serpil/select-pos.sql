@@ -2,6 +2,8 @@
 --   Select a specific position from the
 --   Balance pillar of a given date.
 --
+--   Compare with POS_SERPIL
+--
 with sel_pillar as (
 --
 --  Subquery to find correct serpil_id

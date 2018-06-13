@@ -1,3 +1,6 @@
+--
+-- Compare with BALSTRU_SERPIL
+--
 with sel_pillar as (
 --
 --  Subquery to find correct serpil_id
