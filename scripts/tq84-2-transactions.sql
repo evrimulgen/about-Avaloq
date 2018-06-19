@@ -45,6 +45,10 @@ declare
          k.key_val =  val;
 
        return ret;
+   exception when no_data_found then
+   
+       dbms_output.put_line('avq_key_to_obj: no obj found for intlId = ' || intlId || ' and val = ' || val || '<');
+       return null;
 
    end avq_key_to_obj;
 
@@ -79,8 +83,8 @@ declare
        where
          cc.id = id_;
        return ret;
-     -- exception when no_data_found then
-      --  return '? ' || id_ || ' ?';
+       exception when no_data_found then
+         return 'Nothing found in code_const for ' || id_;
    end avq_code_const_name;
 
    function avq_pers_2_bp_account_owner(pers in number) return number is
@@ -90,18 +94,35 @@ declare
        select
          rel.obj_id into ret
        from
-         code_bp_person_rel_type      typ                                           join
-         obj_bp_person_rel            rel on typ.id     = rel.bp_person_rel_type_id join
-         obj_bp                       obp on obp.obj_id = rel.obj_id                join
+         code_bp_person_rel_type      typ                                                join
+         obj_bp_person_rel            rel on typ.id     = rel.bp_person_rel_type_id      join
+         obj_bp                       obp on obp.obj_id = rel.obj_id                left join
          code_acc_type                act on act.id     = obp.acc_type_id
        where
          typ.intl_id = 'acc_owner'                       and
-         act.intl_id = 'customer'                        and
+      -- 2018-06-19:
+      -- Check null intl_id (left join):
+         nvl(act.intl_id, 'customer') in ('customer')    and
          sysdate between rel.valid_from and rel.valid_to and
-         rel.rel_person_id = pers;
+         rel.rel_person_id = pers                        and
+      --
+      -- 2018-06-18:
+      --
+         obp.person_type_id is not null -- (= 4 ?)
+         ;
 
       return ret;
+   exception
+     when too_many_rows then
+       
+       dbms_output.put_line('avq_pers_2_bp_account_owner: too many rows for pers ' || pers);
+       return null;
 
+     when no_data_found then
+
+       dbms_output.put_line('avq_pers_2_bp_account_owner: no row found for ' || pers);
+       return null;
+--       raise;
    end avq_pers_2_bp_account_owner;
 
    function avq_bp_nr_2_obj_bp(bp_nr varchar2) return number is
@@ -111,7 +132,7 @@ declare
 
    function tq84_2_obj_pers(tq84 varchar2) return number is
    begin
-       return avq_key_to_obj('tq84$cin', tq84);
+       return avq_key_to_obj('tq84$pers_id', tq84);
    end tq84_2_obj_pers;
 
    function avq_cont_to_nr(cont in number) return varchar2 is
@@ -134,7 +155,6 @@ declare
        return ret;
 
    end avq_obj_name;
-
 
    procedure avq_trx_of_bp(bp number) is
    begin
