@@ -5,7 +5,8 @@ select
    doc.trx_date              doc_trx_date,
    doc.val_date              doc_val_date,
    doc.perf_date             doc_perf_date,
-   doc.order_type_id         doc_order_type_id,
+-- doc.order_type_id         doc_order_type_id,
+   ordtyp.name               order_type,
    doc.order_sub_type_id     doc_order_sub_type_id,
    doc.doc_role_id           doc_role_id,
    doc.amount                doc_amount,
@@ -25,8 +26,9 @@ select
    settle.meta_msg_cancel_id,
    msgspec.name  msg_spec_name
 from
-   doc                                                             join
-   doc_settle settle  on settle.doc_id           = doc    .id left join
-   meta_msg   msgspec on settle.meta_msg_spec_id = msgspec.id
+   doc                                                                  join
+   code_order_type ordtyp  on doc   .order_type_id    = ordtyp .id      join
+   doc_settle      settle  on settle.doc_id           = doc    .id left join
+   meta_msg        msgspec on settle.meta_msg_spec_id = msgspec.id
 where
    settle.doc_id = 42;
