@@ -17,3 +17,4 @@ from
    obj_prcq                 prcq                                           left join
    code_date_type           pdtt on prcq.prc_date_type_id       = pdtt.id  left join
    code_retry_interval_type rint on prcq.retry_interval_type_id = rint.id
+;
