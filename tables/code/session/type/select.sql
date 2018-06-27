@@ -15,5 +15,3 @@ from
          2 BGP session               +                            Background process session                                                                                                                                                                                        
          3 Stateful UI session                +       +           Stateful UI session (e.g. from SmartClient)                                                                                                                                                                       
          4 Stateless UI session               +                   Stateless UI session (e.g. from Web client)                                                                                                                                                                       
---
-  
