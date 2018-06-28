@@ -3,7 +3,7 @@ select
    bp_2_pers.rel_person_id              obj_pers_id,
    bp_2_pers.obj_id                     obj_bp_id,
    bp_key.key_val                       bp_nr,
-   pers_key.key_val                     tq84_intern_nr,
+   pers_key.key_val                     pers_nr,
    obj_bp.birthdate                     bp_birthdate,
    bp_type.name                         bp_type,
    bp_acc_type.name                     bp_acc_type,
@@ -24,9 +24,11 @@ from
    code_bp_person_type     bp_person_type on obj_bp.person_type_id           = bp_person_type.id join
    code_acc_type           bp_acc_type    on obj_bp.acc_type_id              = bp_acc_type.id
 where
-   sysdate between bp_2_pers.valid_from and bp_2_pers.valid_to and 
-   bp_key_code.intl_id   = 'bp_nr'                             and
-   pers_key_code.intl_id = 'tq84$intern_bp_id'                 and
--- bp_key_val            = '...'                               and
-   pers_key.key_val      = '...'
+   ----------------------------------------------------------------
+   bp_key_code.intl_id   = 'bp_nr'                              and
+   pers_key_code.intl_id = 'person_nr'                          and
+   ----------------------------------------------------------------
+   bp_key.key_val        = '...'                                and
+-- pers_key.key_val      = '...'                                and
+   sysdate between bp_2_pers.valid_from and bp_2_pers.valid_to
 ;
