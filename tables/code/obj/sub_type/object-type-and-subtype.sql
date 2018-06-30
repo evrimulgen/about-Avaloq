@@ -1,0 +1,282 @@
+select
+   case when obt.name != nvl(lag(obt.name) over (order by obt.activ, lower(obt.name), sut.activ, lower(sut.name)), 'x') then obt.name else null end object_type,
+   sut.name    object_sub_type,
+   obt.activ   ota,
+   sut.activ   sta 
+from
+   code_obj_sub_type    sut  join
+   code_obj_type        obt on sut.obj_type_id = obt.id
+order by
+   obt.activ,
+   lower(obt.name),
+   sut.activ,
+   lower(sut.name);
+-- 
+-- 
+-- Application                              Business Application                     +   +  
+--                                          Standard Application                     +   +  
+--                                          Table Application                        +   +  
+-- Asset                                    Borrowing Contract                       +   +  
+--                                          Cash Pooling Auxiliary Account           +   +  
+--                                          Cash Pooling Pool Account                +   +  
+--                                          Currency                                 +   +  
+--                                          Currency Pair Asset                      +   +  
+--                                          Fiduciary Contract                       +   +  
+--                                          Fixed Asset                              +   +  
+--                                          Interest Rate                            +   +  
+--                                          Money Market Contract                    +   +  
+--                                          Note                                     +   +  
+--                                          Option on Other Underlyings              +   +  
+--                                          Other                                    +   +  
+--                                          Other Security                           +   +  
+--                                          Physical Metal                           +   +  
+--                                          Real Security                            +   +  
+--                                          Realty                                   +   +  
+--                                          Repo Contract                            +   +  
+--                                          Security                                 +   +  
+--                                          Security without Custodian               +   +  
+--                                          SLB Contract                             +   +  
+--                                          Virtual Metal                            +   +  
+-- Asset Allocation                         MAA                                      +   +  
+--                                          SAA                                      +   +  
+--                                          TAA                                      +   +  
+-- Background process                       bgp oracle                               +   +  
+--                                          bgp os                                   +   +  
+-- Collection                               Dynamic collection                       +   +  
+--                                          Restricted dynamic collection            +   +  
+--                                          Static collection                        +   +  
+--                                          Tree collection                          +   +  
+--                                          !basket collection                       +      
+--                                          !Performance collection                  +      
+-- Competence Level Profile                 Individual Competence Level Profile      +   +  
+--                                          Master Competence Level Profile          +   +  
+-- Constraint                               restriction                              +   +  
+--                                          stragey                                  +   +  
+-- Container                                Cost Accounting Container                +   +  
+--                                          Ledger Container                         +   +  
+--                                          Shared Container                         +   +  
+-- Cost Accounting                          Cost Centre                              +   +  
+--                                          Cost Object                              +   +  
+--                                          Project                                  +   +  
+-- Customer Accounting                      Customer Accounting                      +   +  
+--                                          Fund                                     +   +  
+--                                          Trust Fund                               +   +  
+--                                          !Managed Investment Scheme               +      
+-- Direct Debit                             Direct Debit Contract                    +   +  
+--                                          Direct Debit Mandate                     +   +  
+-- Document                                 Customer Document                        +   +  
+--                                          E-Banking Login                          +   +  
+--                                          General Document                         +   +  
+--                                          Legal Document                           +   +  
+--                                          Operational Document                     +   +  
+--                                          Questionnaire                            +   +  
+--                                          Standard Document                        +   +  
+--                                          !Domicile Certificate Document           +      
+--                                          !Internet Contract                       +      
+-- Financing                                Collateral Agreement                     +   +  
+--                                          Standard Financing                       +   +  
+--                                          Syndicated Financing                     +   +  
+--                                          !Limit Usage                             +      
+--                                          !Pledge V1                               +      
+--                                          !Single Facility/Limit                   +      
+--                                          !Standard Pledge                         +      
+--                                          !Standard Pledge Template                +      
+-- Hedge                                    Economical Hedge                         +   +  
+--                                          HGB Valuation Unit                       +   +  
+--                                          IFRS Fair Value Hedge                    +   +  
+--                                          Legal CH Pledging for CDS                +   +  
+-- Hierarchic Object Breakdown Scheme       HOBS Flat                                +   +  
+--                                          HOBS Flat Free                           +   +  
+--                                          HOBS Orthogonal                          +   +  
+-- Index                                    CDS Index                                +   +  
+--                                          Index on Asset                           +   +  
+-- Investment Policy Statement              Fund IPS                                 +   +  
+--                                          IPS                                      +   +  
+--                                          !Product IPS                             +      
+--                                          !Simulated IPS                           +      
+-- Market data object                       Fee Profile HWM/WM                       +   +  
+--                                          Fiduciary curve                          +   +  
+--                                          Financial Planning Interest Curve        +   +  
+--                                          Financial Planning Price Curve           +   +  
+--                                          md_capvlt                                +   +  
+--                                          md_deprate                               +   +  
+--                                          md_dscnt_crv                             +   +  
+--                                          md_equity_vlt                            +   +  
+--                                          md_fict_marg                             +   +  
+--                                          md_fra_rate                              +   +  
+--                                          md_fx                                    +   +  
+--                                          md_fxvlt                                 +   +  
+--                                          md_idx_comdty                            +   +  
+--                                          md_idx_equity                            +   +  
+--                                          md_marg_class                            +   +  
+--                                          md_marg_grp                              +   +  
+--                                          md_prob                                  +   +  
+--                                          md_prob_dflt                             +   +  
+--                                          md_rfact_liquid_risk                     +   +  
+--                                          md_spread_crv                            +   +  
+--                                          md_spread_rate                           +   +  
+--                                          md_swaprate                              +   +  
+--                                          md_term_struct_crv                       +   +  
+--                                          md_yield_crv                             +   +  
+--                                          md_zerorate                              +   +  
+--                                          Price Index                              +   +  
+--                                          Volatility data point                    +   +  
+--                                          Volatility structure                     +   +  
+-- Model Portfolio                          Assets-only MPF (Recommendation List)    +   +  
+--                                          Collection-based MPF                     +   +  
+--                                          Container-based MPF                      +   +  
+--                                          Index-based MPF                          +   +  
+--                                          MPF Weights & Quantities                 +   +  
+--                                          MPF Weights & Tolerance                  +   +  
+--                                          Quantities-only MPF                      +   +  
+--                                          Weights-only MPF                         +   +  
+-- Person                                   Gesellschaft bürgerlichen Rechts         +   +  
+--                                          Intermediary Person                      +   +  
+--                                          Legal Person                             +   +  
+--                                          Natural Person                           +   +  
+--                                          !Internal Entity Person                  +      
+--                                          !Issuer Person                           +      
+--                                          !Job                                     +      
+--                                          !Organisational Entity                   +      
+--                                          !Person Association                      +      
+--                                          !Reporting Person                        +      
+--                                          !Separate Estate Person                  +      
+--                                          !Sole Proprietorship Person              +      
+--                                          !Unclear Person Type                     +      
+-- Product                                  Banking Product                          +   +  
+--                                          Marketing Instrument                     +   +  
+--                                          Other Product                            +   +  
+-- Queue processor                          Booking                                  +   +  
+--                                          Calendar Propagation                     +   +  
+--                                          File Upload                              +   +  
+--                                          Mail                                     +   +  
+--                                          Message                                  +   +  
+--                                          Message Bundle                           +   +  
+--                                          Minstr                                   +   +  
+--                                          Object                                   +   +  
+--                                          Order                                    +   +  
+--                                          pos_amount_scd                           +   +  
+--                                          pos_cred_viol                            +   +  
+--                                          Position Blocking                        +   +  
+--                                          Run                                      +   +  
+--                                          Task                                     +   +  
+-- Restriction                              AND combined Restriction                 +   +  
+--                                          Asset Allocation based Restriction       +   +  
+--                                          Customised Restriction                   +   +  
+--                                          Free Text based Restriction              +   +  
+--                                          OR combined Restriction                  +   +  
+--                                          Performance Restriction                  +   +  
+--                                          Surrogate Restriction                    +   +  
+--                                          Template based Restriction               +   +  
+-- SLB Agreement                            Borrowing Agreement                      +   +  
+--                                          Lending Agreement                        +   +  
+-- Source                                   Application                              +   +  
+--                                          ATS Compo wide Parameterisation Data     +   +  
+--                                          ATS Test Script Definition               +   +  
+--                                          Audit                                    +   +  
+--                                          avaloq Script Package                    +   +  
+--                                          Background Process                       +   +  
+--                                          Base Parameter Definition                +   +  
+--                                          Classification                           +   +  
+--                                          Code Table Data                          +   +  
+--                                          Code Table Definition                    +   +  
+--                                          Data Dictionary                          +   +  
+--                                          Duplicate Control                        +   +  
+--                                          File Report                              +   +  
+--                                          File Stream                              +   +  
+--                                          HTML Page                                +   +  
+--                                          Incoming Message                         +   +  
+--                                          Info                                     +   +  
+--                                          Info Definition                          +   +  
+--                                          Interface                                +   +  
+--                                          Key                                      +   +  
+--                                          Legacy Consolidator Template             +   +  
+--                                          Legacy Task Layout                       +   +  
+--                                          Message Bundle In                        +   +  
+--                                          Message Bundle Out                       +   +  
+--                                          Message Bundle Structure                 +   +  
+--                                          Message Structure                        +   +  
+--                                          Network                                  +   +  
+--                                          Network Structure                        +   +  
+--                                          Order Validation                         +   +  
+--                                          Outgoing Message                         +   +  
+--                                          Parameter List                           +   +  
+--                                          Pillar                                   +   +  
+--                                          Print Report                             +   +  
+--                                          Printer                                  +   +  
+--                                          Queue Processor                          +   +  
+--                                          Reconciliation Calculation Method        +   +  
+--                                          Report Datamart                          +   +  
+--                                          Rule Template                            +   +  
+--                                          Screen Report                            +   +  
+--                                          Script Report                            +   +  
+--                                          Security Event 2 Asset Flow Template     +   +  
+--                                          Security Event Statement Text            +   +  
+--                                          Source Framework Test                    +   +  
+--                                          Structured Mailing Product Definition    +   +  
+--                                          Table Editor                             +   +  
+--                                          Table Report                             +   +  
+--                                          Task                                     +   +  
+--                                          Task Template                            +   +  
+--                                          Tree Structure                           +   +  
+--                                          Type Definition                          +   +  
+--                                          User                                     +   +  
+--                                          Workflow Command Library                 +   +  
+--                                          Workflow definition                      +   +  
+--                                          Workflow Library                         +   +  
+--                                          !ATS System Test Case Definition         +      
+--                                          !ATS System Test Input Data              +      
+--                                          !avaloq Script                           +      
+--                                          !avaloq Script Function                  +      
+--                                          !avaloq Script Procedure                 +      
+--                                          !Code Table Public Rows                  +      
+--                                          !Report                                  +      
+--                                          !Workflow                                +      
+--                                          !Workflow Command                        +      
+-- Structured Mailing Product               Default Structured Mailing Product       +   +  
+--                                          Individual Structured Mailing Product    +   +  
+--                                          Shipment Template                        +   +  
+-- Task layout                              Dashboard Layout                         +   +  
+--                                          Screen Chart Layout                      +   +  
+--                                          Screen HTML Layout                       +   +  
+-- Task template                            Collection Task Template                 +   +  
+--                                          Technical Task Template                  +   +  
+-- !Aggregation figure                      !afig_comp_pos                                  
+--                                          !afig_snap_pos                                  
+-- !Aggregation node                        !anode_snap_pos                                 
+-- !Asset instance                          Asset Aggregation                            +  
+--                                          Cash Pooling Auxiliary Position              +  
+--                                          Cash Pooling Pool Position                   +  
+--                                          Certificate                                  +  
+--                                          Contract                                     +  
+--                                          Cost Accounting Auxiliary Position           +  
+--                                          Currency Pair Position                       +  
+--                                          Current Account                              +  
+--                                          Deposits                                     +  
+--                                          Fixed Asset Position                         +  
+--                                          Interim Account                              +  
+--                                          Metal Account                                +  
+--                                          Migrated Position                            +  
+--                                          Note                                         +  
+--                                          Product Auxiliary Position                   +  
+--                                          Product Set Instance Position                +  
+--                                          Rebal dummy position (no bookings!)          +  
+--                                          Safe Deposit Box                             +  
+--                                          Sealed Envelope Position                     +  
+--                                          Security                                     +  
+--                                          Split Position                               +  
+--                                          UBT-Based Position                           +  
+--                                          !don't use: advance                             
+--                                          !don't use: bank guaranty                       
+--                                          !don't use: call money                          
+--                                          !don't use: credit                              
+--                                          !don't use: fiduciary call                      
+--                                          !don't use: fiduciary time                      
+--                                          !don't use: forex forward                       
+--                                          !don't use: forex forward securities            
+--                                          !don't use: guaranty                            
+--                                          !don't use: initial margin                      
+--                                          !don't use: metall account forward              
+--                                          !don't use: mortgage                            
+--                                          !don't use: sec. borrowing & lending            
+--                                          !don't use: time deposit                   
