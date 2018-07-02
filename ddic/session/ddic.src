@@ -1,0 +1,1171 @@
+[Data Dictionary 1.0]
+
+static memory structure session
+
+  ----------------------------------------------------------------------------
+  -- SESSION ENVIRONMENT
+  ----------------------------------------------------------------------------
+  -- ID: NULL
+  ----------------------------------------------------------------------------
+  descn        [Session]
+
+  ----------------------------------------------------------------------------
+  -- DDIC ID
+  ----------------------------------------------------------------------------
+  "id" number
+    get
+      value    [ora_session#.c_sess#sid]
+
+  ----------------------------------------------------------------------------
+  name text
+    get
+      value    ['avaloq Session ' || ora_session#.c_sess#sid]
+
+  ----------------------------------------------------------------------------
+  -- THE MANAGERS
+  ----------------------------------------------------------------------------
+  doc_mgr mem_doc_mgr
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  msg_mgr mem_msg_mgr
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  log_mgr mem_log_mgr
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  ui_mgr mem_ui_mgr
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  ctx_mgr mem_session_ctx_mgr
+    get
+      value    [null]
+
+  ----------------------------------------------------------------------------
+  eop_mgr mem_eop_mgr
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  pref mem_pref
+    get
+      value    [null]
+  ----------------------------------------------------------------------------
+  batch_mgr mem_batch_mgr
+    get
+      value    [null]
+
+  ----------------------------------------------------------------------------
+  -- DATABASE
+  ----------------------------------------------------------------------------
+  db_name text
+    descn      [Name of the database, e.g. prod]
+    get
+      value    [co_session.db_name]
+
+  ----------------------------------------------------------------------------
+  global_name text
+    descn      [Global name of the database, prod.avaloq]
+    get
+      value    [co_session.global_name]
+
+  ----------------------------------------------------------------------------
+  avq_release text
+    descn      [Release of ABS]
+    get
+      value    [pref#.get_release]
+
+  ----------------------------------------------------------------------------
+  -- CURRENT TASK EXECUTION
+  ----------------------------------------------------------------------------
+  curr_task_exec_id id task_exec_rw
+    descn      [Current task execution if task, otherwise null]
+    get
+      value    [task_exec#.curr_exec]
+
+  ----------------------------------------------------------------------------
+  -- JOB SCHEDULER
+  ----------------------------------------------------------------------------
+  set_ef action
+    descn      [Raises an event flag. Event flags are used by the job scheduler, only.
+               The job scheduler must wait for the event flag before it is raised.]
+    param      sched_ef_id id table code_sched_ef mandatory
+    param      do_commit boolean
+      default  "'+'"
+    do
+      stmt     [
+  if co_err.get_debug then
+    k.log#.info('Event flag '''|| :p1 ||''' is raised by an application');
+  end if;
+  sched#.set_ef(
+    i_sched_ef_id => :p1
+   ,i_do_commit   => nvl(:p2 = '+', true)
+  );
+]
+
+  ----------------------------------------------------------------------------
+  -- PRODUCTIVE ENVIRONMENT
+  ----------------------------------------------------------------------------
+  is_prod_env boolean
+    descn      [Is productive environment]
+    get
+      value    [case when sys#.is_prod then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  -- SESSION TYPE
+  ----------------------------------------------------------------------------
+  is_intf boolean
+    descn      [Is current session a GUI session?]
+    get
+      value    [case when session#.session#is_intf then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  is_batch boolean
+    descn      [Is current session a batch (background) session?]
+    get
+      value    [case when session#.session#is_batch then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  is_single_login boolean
+    descn      [Is current session a single login session?]
+    get
+      value    [case when session#.session#is_single_login then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  -- SESSION INFO (IF OPENED BY EXTERNAL SYSTEM)
+  ----------------------------------------------------------------------------
+  extl_sys_id id code_extl_sys
+    descn      [the ID of the external system (CODE_EXTL_SYS) that has opened the session. Mostly used in incoming message handlers.]
+    get
+      value    [session#.session#extl_sys_id]
+
+  ----------------------------------------------------------------------------
+  extl_session_id text
+    descn      [Returns the ID of the external session that has opened the session. Mostly used in incoming message handlers.]
+    get
+      value    [session#.session#extl_session_id]
+
+  ----------------------------------------------------------------------------
+  -- PRINTER
+  ----------------------------------------------------------------------------
+  printer_id id obj_printer
+    descn      [Current printer ID. A printer ID or name may be assigned.
+               Assigning NULL resets the printer ID to the user's default printer]
+    get
+      value    [session#.session#printer_id]
+    set
+      stmt     [
+session#.session#set_printer_id(
+ coalesce(
+   is_number(:x)
+  ,lookup#.obj_id(upper(:x), i_obj_type_id => def_obj_type.printer)
+  ,pref#.user#pref_id(i_pref_type_id => def_pref_type.queue, i_sec_user_id => session#.session#sec_user_id)
+ )
+);
+]
+
+  ----------------------------------------------------------------------------
+  -- BGP SESSION INFO
+  ----------------------------------------------------------------------------
+  bgp_id id obj_bgp
+    descn      [BGP ID of current session if batch session, otherwise null]
+    get
+      value    [obj_bgp#.bgp_id]
+
+  ----------------------------------------------------------------------------
+  bgp_instn_id number
+    descn      [BGP Instance ID of current session if batch session, otherwise null]
+    get
+      value    [obj_bgp#.instn_id]
+
+  ----------------------------------------------------------------------------
+  -- CURRENT BUSINESS UNIT
+  ----------------------------------------------------------------------------
+  bu_id id obj_bp_bu
+    descn      [Business unit]
+    param      session_env_id id table code_session_env
+    get
+      value    [session#.session#bu_id]
+    set
+      stmt     [session#.session#set_bu_id(:x, :p1);]
+
+  ----------------------------------------------------------------------------
+  bu_country_id id obj_country
+    descn      [Country of the business unit]
+    get
+      value    [def.country_bank_id]
+
+  ----------------------------------------------------------------------------
+  bu_curry_id id obj_curry
+    descn      [Currency of the business unit]
+    get
+      value    [def.curry_bank_id]
+
+  ----------------------------------------------------------------------------
+  -- CURRENT USER
+  ----------------------------------------------------------------------------
+  user_id id user
+    descn      [Returns the ID of the session user, or the virtual user if set.]
+    get
+      value    [session#.session#sec_user_id]
+
+  ----------------------------------------------------------------------------
+  oracle_user text
+    descn      [Returns the ORACLE_USER of the session user, or the virtual user if set.]
+    get
+      value    [session#.session#oracle_user]
+
+  ----------------------------------------------------------------------------
+  timestp date
+    descn      [Returns the localtimestamp, or the virtual timestamp if set.]
+    get
+      value    [cast(session#.session#timestp as date)]
+
+  ----------------------------------------------------------------------------
+  login_timestp time_tz
+    descn      [Returns the login timestamp.]
+    get
+      value    [session#.session#login_timestp]
+
+  ----------------------------------------------------------------------------
+  user_bp_id id obj_bp
+    descn      [Current users associated business partner object (NULL if no associated reference object or if associated object is not a business partner)]
+    get
+      value    [session#.session#bp_id]
+
+  ----------------------------------------------------------------------------
+  user_person_id id obj_person
+    descn      [Current users associated person object (NULL if no associated reference object or if associated object is not a person)]
+    get
+      value    [session#.session#person_id]
+
+  ----------------------------------------------------------------------------
+  show_name_intl boolean
+    descn      [Are only the internal names visible for the user? Default: internal name]
+    get
+      value    [case when nvl(obj_name#.show_name_intl, true) then '+' else '-' end]
+    set
+      stmt     [obj_name#.set_show_name_intl(:x = '+');]
+
+  ----------------------------------------------------------------------------
+  lang_id id table code_lang
+    descn      [Current users language]
+    get
+      value    [session#.session#lang_id]
+
+  ----------------------------------------------------------------------------
+  fmt_id id table code_fmt
+    descn      [Current format]
+    get
+      value    [code_fmt#.fmt_id]
+    set
+      stmt     [code_fmt#.set_fmt_id(:x);]
+
+  ----------------------------------------------------------------------------
+  has_access_code boolean
+    descn      [Does the current use have the given access code?]
+    param      access_id id table code_access
+    get
+      value    [case when sec#.has_access_code(:p1) then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  cash_box_id id obj_cont
+    descn      [Current users cash box]
+    get
+      value    [session#.session#cash_box_id]
+
+  ----------------------------------------------------------------------------
+  terminal_id id obj_terminal obsolete
+    substitute [session.ui_mgr.terminal_id]
+    descn      [Current users terminal]
+    get
+      value    [session#.session#terminal_id]
+    set
+      stmt     [session#.session#set_terminal_id(i_terminal_id => :x);]
+
+  ----------------------------------------------------------------------------
+  -- BU SWITCHING
+  ----------------------------------------------------------------------------
+  restore_session action
+    descn      [Restores previous session setup]
+    param      session_env_id id table code_session_env mandatory
+    do
+      stmt     [session#.restore_session(:p1);]
+
+  ----------------------------------------------------------------------------
+  -- USER SWITCHING
+  ----------------------------------------------------------------------------
+  set_sec_user action
+    descn      [Sets the session user. Only individual or virtual users allowed. Security setup is not changed !!]
+    param      name text mandatory
+    do
+      stmt     [session#.session#set_sec_user_id(obj_user#.user#id_from_name(:p1));]
+
+  ----------------------------------------------------------------------------
+  reset_sec_user action
+    descn      [Reset the session user to the user who created the session]
+    do
+      stmt     [session#.session#reset_sec_user_id;]
+
+  ----------------------------------------------------------------------------
+  set_virt_user action
+    descn      [Sets the virtual user. Security setup is not changed !!]
+    param      name text mandatory
+    do
+      stmt     [session#.session#set_virt_user(obj_user#.user#id_from_name(:p1, def_user_type.virt));]
+
+  ----------------------------------------------------------------------------
+  reset_virt_user action
+    descn      [Reset the virtual user to the user who created the session]
+    do
+      stmt     [session#.session#reset_virt_user;]
+
+  ----------------------------------------------------------------------------
+  base_user_id id user
+    descn      [User who created the session]
+    get
+      value    [session#.session#base_sec_user_id]
+
+  ----------------------------------------------------------------------------
+  -- VIRTUAL TIMESTAMP SWITCHING
+  ----------------------------------------------------------------------------
+  set_virt_timestp action
+    descn      [Sets the virtual timestamp]
+    param      timestp date
+    do
+      stmt     [session#.session#set_virt_timestp(:p1);]
+
+  ----------------------------------------------------------------------------
+  reset_virt_timestp action
+    descn      [Reset the virtual timestamp to localtimestamp]
+    do
+      stmt     [session#.session#reset_virt_timestp;]
+
+  ----------------------------------------------------------------------------
+  -- CURRENT DATE & TIME
+  ----------------------------------------------------------------------------
+  today date
+    descn      [Current bank date]
+    get
+      value    [base#.today]
+
+  ----------------------------------------------------------------------------
+  time number
+    descn      [Current time in hsec]
+    get
+      value    [dbms_utility.get_time]
+
+  ----------------------------------------------------------------------------
+  -- SPECIAL OBJECTS
+  ----------------------------------------------------------------------------
+  nobody_bp_id id obj_bp
+    get
+      value    [def.bp_nobody_id]
+
+  ----------------------------------------------------------------------------
+  casual_bp_id id obj_bp
+    get
+      value    [casual_client#.bp_id]
+
+  ----------------------------------------------------------------------------
+  casual_cont_id id obj_cont
+    get
+      value    [casual_client#.cont_id]
+
+  ----------------------------------------------------------------------------
+  xrate_ref_curry_id id obj_curry
+    descn      [The business unit wide xrate reference currency]
+    get
+      value    [def.curry_ref_id]
+
+  ----------------------------------------------------------------------------
+  hold_mail_addr_id id obj_addr
+    descn      [The special holdmail address]
+    get
+      value    [def.addr_keep_id]
+
+  ----------------------------------------------------------------------------
+  ebs_recon_bp_id id obj_bp
+    get
+      value    [def.bp_ebs_recon_id]
+
+  ----------------------------------------------------------------------------
+  ebs_nostro_bp_id id obj_bp
+    get
+      value    [def.bp_ebs_nostro_gen_id]
+
+  ----------------------------------------------------------------------------
+  -- MEMORY TRANSACTION MANAGEMENT
+  ----------------------------------------------------------------------------
+  reset action
+    descn      [Reset session state]
+    do
+      stmt     [doc_mgr#.reset(null);]
+
+  ----------------------------------------------------------------------------
+  start_trx action
+    descn      [Start a named memory transaction]
+    param      name text
+    do
+      stmt     [trx_util#.trx#start(:p1, doc_mgr#.trx_mgr);]
+
+  ----------------------------------------------------------------------------
+  commit_trx action
+    descn      [Commit a named memory transaction]
+    param      name text
+    do
+      stmt     [trx_util#.trx#commit(:p1);]
+
+  ----------------------------------------------------------------------------
+  rollback_trx action
+    descn      [Rollback a named memory transaction]
+    param      name text
+    do
+      stmt     [trx_util#.trx#rollback(:p1);]
+
+  ----------------------------------------------------------------------------
+  -- DB TRANSACTION MANAGEMENT
+  ----------------------------------------------------------------------------
+  commit action
+    descn      [Database commit: In case 'do_db_commit' is '-', this method does nothing (rls_all_locks is ignored)]
+    param      do_db_commit boolean
+      default  "'+'"
+    param      rls_all_locks boolean
+      default  "'+'"
+    do
+      stmt     [if nvl(:p1 = '+', true) then
+                 doc_mgr#.do_commit(i_rls_all_locks => nvl(:p2 = '+', true));
+               end if;
+              ]
+
+  ----------------------------------------------------------------------------
+  rollback action
+    descn      [Database rollback]
+    do
+      stmt     [session#.trx#rollback;]
+
+  ----------------------------------------------------------------------------
+  session_level number
+    descn      [Returns current session level ]
+    get
+      value    [base#.session_level]
+
+  ----------------------------------------------------------------------------
+  -- SLEEP
+  ----------------------------------------------------------------------------
+  sleep action
+    descn      [pause execution for the specified time (in seconds)]
+    param      timeout number mandatory
+    do
+      stmt     [dbms_lock.sleep(:p1);]
+
+  ----------------------------------------------------------------------------
+  -- NUMBER FORMATTING
+  ----------------------------------------------------------------------------
+  fmt_nr text
+    descn      [Formatted number according to format pattern]
+    param      nr number mandatory
+    param      fmt text
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [number#.fmt(:p1, nvl(:p2, '>15G.9<'), :p3, :p4)]
+
+  ----------------------------------------------------------------------------
+  -- DATE FORMATTING
+  ----------------------------------------------------------------------------
+  date_form text
+    descn      [Formatted date (form) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, code_fmt#.date_fmt_form, :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_short text
+    descn      [Formatted date (short) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Short', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_medium text
+    descn      [Formatted date (medium) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Medium', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_long text
+    descn      [Formatted date (long) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Long', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_dm_short text
+    descn      [Formatted day-month (short) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Day_Month_Short', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_dm_long text
+    descn      [Formatted day-month (long) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Day_Month_Long', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_time_form text
+    descn      [Formatted date and time (form) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, code_fmt#.date_time_fmt_form, :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_time_short text
+    descn      [Formatted date and time (short) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Date_Time_Short', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_time_medium text
+    descn      [Formatted date and time (medium) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Date_Time_Medium', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  date_time_long text
+    descn      [Formatted date and time (long) in current report language]
+    param      "date" date
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt(:p1, 'Date_Time_Long', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  -- TIMEZONE FORMATTING
+  ----------------------------------------------------------------------------
+  tswtz_form text
+    descn      [Formatted timezone (form) in current report language]
+    param      tswtz time_tz
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt_tswtz(:p1, code_fmt#.date_time_tz_fmt_form, :p3, :p2)]
+
+  tswtz_short text
+    descn      [Formatted timezone (short) in current report language]
+    param      tswtz time_tz
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt_tswtz(:p1, 'Date_Time_Short', :p3, :p2)]
+
+  tswtz_medium text
+    descn      [Formatted timezone (medium) in current report language]
+    param      tswtz time_tz
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt_tswtz(:p1, 'Date_Time_Medium', :p3, :p2)]
+
+  tswtz_long text
+    descn      [Formatted timezone (long) in current report language]
+    param      tswtz time_tz
+    param      lang_id id table code_lang
+    param      fmt_id id table code_fmt
+    get
+      value    [code_fmt#.fmt_tswtz(:p1, 'Date_Time_Long', :p3, :p2)]
+
+  ----------------------------------------------------------------------------
+  -- CODE TABLE FORMATTING
+  ----------------------------------------------------------------------------
+  fld text
+    descn      [
+Get the specified field value (default 'name') from the given code table entry.
+For name field access, which first goes over out_text, the current session language is used.
+]
+    param      tab_name text mandatory
+    param      item_id text mandatory
+    param      fld text
+      default  "'name'"
+    param      cond text
+    get
+      value    [get_code(i_tab_name => :p1, i_id => :p2, i_noname => null, i_fld_name => nvl(:p3, 'name'), i_cond => :p4, i_name_len => 4000)]
+
+  ----------------------------------------------------------------------------
+  -- OUT TEXT ENTRIES
+  ----------------------------------------------------------------------------
+  "text" text
+    descn      [Text block in current session language]
+    param      key text mandatory
+    param      lang id table code_lang
+    get
+      value    [out_text#.text(:p1, nvl(:p2, code_lang#.g_id))]
+
+  ----------------------------------------------------------------------------
+  text_long text
+    descn      [Long text block in current session language]
+    param      key text mandatory
+    param      lang id table code_lang
+    get
+      value    [out_text#.text_long(:p1, nvl(:p2, code_lang#.g_id))]
+
+  ----------------------------------------------------------------------------
+  -- PREFERENCES LOOKUP
+  ----------------------------------------------------------------------------
+  pref_val text
+    descn      [Get user settings of a defined preference type]
+    param      pref_type_id id table code_pref_type
+    get
+      value    [pref#.user#pref_val(i_pref_type_id => :p1)]
+
+  ----------------------------------------------------------------------------
+  -- RAISE ERRORS
+  ----------------------------------------------------------------------------
+  raise_ui_err action
+    descn      [Raise the given UI error (with given text)]
+    param      err_code id table code_ui_err mandatory
+    param      context text
+    do
+      stmt     [if is_number(:p1) is not null then
+                 raise_ui_err(:p1, :p2);
+               else
+                 raise_ui_err2(:p1, :p2);
+               end if;
+              ]
+
+  ----------------------------------------------------------------------------
+  raise_sec_ui_err action -- security related UI exception (includes logging if enabled)
+    descn      [Raise the given security related UI error (with given text)]
+    param      err_code          id table code_ui_err mandatory
+    param      ui_action         text                 mandatory -- Action being executed leading to security related UI exception
+    param      sec_item          text                 mandatory -- Numerical ID of item leading to security related UI exception (e.g. obj_id, doc_id, access_id, etc.) or name of secured item
+    param      sec_item_type     text                 mandatory -- Type of item in SEC_ITEM defined in SEC_UI_ERR_SEC_ITEM_TYPE_V (e.g. "obj", "doc", "code_access", "code", "text")
+    param      sec_item_type_ctx text                           -- Additional context for SEC_ITEM_TYPE (e.g. name of code table if SEC_ITEM_TYPE is set to "code")
+    param      context           text
+    do
+      stmt     [raise_sec_ui_err(:p1, :p2, :p3, :p4, :p5, :p6);]
+
+  ----------------------------------------------------------------------------
+  raise_ap_err action
+    descn      [Raise an application error (with given text)]
+    param      err_id id table code_ui_err mandatory
+    param      err_parlist text
+    param      log_data text
+    do
+      stmt     [raise_ap_err(:p1, :p2, :p3);]
+
+  ----------------------------------------------------------------------------
+  raise_fa_err action
+    descn      [Raise a fatal error (with given text)]
+    param      context text
+    param      dbg_txt text
+    do
+      stmt     [raise_fa_err(:p1, :p2);]
+
+  ----------------------------------------------------------------------------
+  -- EVALUATE SCRIPT EXPRESSIONS
+  ----------------------------------------------------------------------------
+  eval_expr text
+    descn      [Evaluate the given script expression]
+    param      expr /*p1*/ text mandatory
+    param      root_alias /*p2*/ text mandatory
+    param      root_tab /*p3*/ text mandatory
+    param      root_ref /*p4*/ text mandatory
+    get
+      declare  [:f varchar2(32000);]
+      before   [
+:f := script#.eval_expr(
+  i_expr           => :p1
+ ,i_root_alias     => :p2
+ ,i_root_tab       => :p3
+ ,i_root_ref       => :p4
+);
+]
+      value    [:f]
+
+  ----------------------------------------------------------------------------
+  eval_of_expr text
+    descn      [Evaluate the given object formatting expression]
+    param      expr /*p1*/ text mandatory
+    param      root_alias /*p2*/ text mandatory
+    param      root_tab /*p3*/ text mandatory
+    param      root_ref /*p4*/ text mandatory
+    param      do_raise_err /*p5*/ boolean
+      default  ['+']
+    get
+      declare  [:f varchar2(32000);]
+      before   [
+:f := of#.eval_of_expr(
+  i_of_expr      => :p1
+ ,i_root_alias   => :p2
+ ,i_root_tab     => :p3
+ ,i_root_ref     => :p4
+ ,i_do_raise_err => (:p5 = '+')
+);
+]
+      value    [:f]
+
+  ----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
+  -- OBSOLETE STUFF
+  ----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
+  -- DOC LOOKUP AND FETCH
+  ----------------------------------------------------------------------------
+  doc_id id mem_doc obsolete
+    substitute [session.doc_mgr.doc_id]
+    param      doc_id id doc mandatory
+    param      do_load boolean
+      default  "'-'"
+    param      no_lock boolean
+      default  "'-'"
+    get
+      declare  [:f doc_mgr#.t_doc;]
+      before   [
+begin
+  :f := doc_mgr#.doc(:p1);
+  if :p2 = '+' and :f is null and :p1 is not null then
+    :f := doc_mgr#.next_doc;
+    doc_mgr#.doc#get(
+      i_doc       => :f
+     ,i_doc_id    => :p1
+     ,i_lock_mode => case when :p3 = '+' then doc_mgr#.c_lock_read else doc_mgr#.c_lock_write end
+    );
+  end if;
+end;
+]
+      value    [:f]
+
+  ----------------------------------------------------------------------------
+  attach_postit action obsolete
+    substitute [session.doc_mgr.attach_postit]
+    descn      [Add the given postit to the given order (order does not need to be in memory, but will be locked)]
+    param      doc_id id doc mandatory
+    param      topic text mandatory
+    param      msg text mandatory
+    do
+      stmt     [doc_tab_postit#.doc#attach(:p1, :p2, :p3);]
+
+  ----------------------------------------------------------------------------
+  -- MSG LOOKUP AND FETCH
+  ----------------------------------------------------------------------------
+  msg_id id mem_msg obsolete
+    substitute [session.msg_mgr.msg_id]
+    param      msg_id id msg mandatory
+    param      do_load boolean
+      default  "'-'"
+    param      do_remv_after boolean
+      default  "'-'"
+    param      do_remv_struct_after boolean
+      default  "'-'"
+    get
+      declare  [:f msg_mgr#.t_msg;]
+      before   [
+begin
+  :f := msg_mgr#.msg_id(:p1);
+  if :p2 = '+' and :f is null and :p1 is not null then
+    :f :=  msg_mgr#.msg_offset(0) + msg_mgr#.doc#next_msg(0);
+    msg_mgr#.msg#get(i_msg => :f, i_msg_id => :p1);
+  end if;
+end;
+]
+      value    [:f]
+      after    [
+if :p3 = '+' then
+  msg_mgr#.msg#remv(:f, nvl(:p4 = '+', false));
+end if;
+]
+
+  ----------------------------------------------------------------------------
+  put_extl_msg action obsolete
+    substitute [session.msg_mgr.put_extl_msg]
+    descn      [Send the given message to the given network]
+    param      netw_id id table code_netw mandatory
+    param      msg_type text mandatory
+    param      msg text mandatory
+    do
+      declare  [
+:f1 pls_integer; /* netw_id */
+:f2 pls_integer; /* meta_msg_id */
+:f3 msg_extl#.t_msg_rec;
+:f4 msg_extl#.t_msg_prty_rec;
+]
+      stmt     [
+begin
+  :f1 := netw#.netw_id(:p1);
+  :f2 := netw#.netw#meta_msg_id(i_netw_id => :f1, i_msg_type => :p2, i_dir => netw#.c_dir_out);
+
+  :f3.msg := buf#.new(i_init_long => :p3);
+
+  :f4.netw_id         := :f1;
+  :f4.msg_type        := :p2;
+  :f4.msg_dlv_type_id := msg_out_dlv_rule#.msg_out_dlv_type_id(i_netw_id => :f1, i_meta_msg_id => :f2);
+  :f4.addr            := msg_out_dlv_rule#.addr               (i_netw_id => :f1, i_meta_msg_id => :f2);
+  :f4.consmr          := msg_out_dlv_rule#.consmr             (i_netw_id => :f1, i_meta_msg_id => :f2);
+  :f4.prio            := msg_out_dlv_rule#.prio               (i_netw_id => :f1, i_meta_msg_id => :f2);
+
+  msg_extl#.netw#put_out_msg(
+    x_msg_prty_rec => :f4
+   ,i_msg_rec      => :f3
+  );
+
+  buf#.remv(:f3.msg);
+exception
+  when others then buf#.remv(:f3.msg); raise;
+end;
+]
+
+  ----------------------------------------------------------------------------
+  put_extl_msg_long action obsolete
+    substitute [session.msg_mgr.put_extl_msg_long]
+    descn      [Send the given message to the given network]
+    param      netw_id id table code_netw mandatory
+    param      msg_type text mandatory
+    param      buf id buf mandatory
+    do
+      declare  [
+:f1 pls_integer; /* netw_id */
+:f2 pls_integer; /* meta_msg_id */
+:f3 msg_extl#.t_msg_rec;
+:f4 msg_extl#.t_msg_prty_rec;
+]
+      stmt     [
+begin
+:f1 := netw#.netw_id(:p1);
+:f2 := netw#.netw#meta_msg_id(i_netw_id => :f1, i_msg_type => :p2, i_dir => netw#.c_dir_out);
+
+:f3.msg := :p3;
+
+:f4.netw_id         := :f1;
+:f4.msg_type        := :p2;
+:f4.msg_dlv_type_id := msg_out_dlv_rule#.msg_out_dlv_type_id(i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.addr            := msg_out_dlv_rule#.addr               (i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.consmr          := msg_out_dlv_rule#.consmr             (i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.prio            := msg_out_dlv_rule#.prio               (i_netw_id => :f1, i_meta_msg_id => :f2);
+
+msg_extl#.netw#put_out_msg(
+  x_msg_prty_rec => :f4
+ ,i_msg_rec      => :f3
+);
+end;
+]
+
+  ----------------------------------------------------------------------------
+  put_extl_msg_meta number obsolete
+    substitute [session.msg_mgr.put_extl_msg_meta]
+    descn      [Send the given message to the given network]
+    param      netw_id id table code_netw mandatory
+    param      msg_type text mandatory
+    param      meta_msg_id number mandatory
+    param      buf id buf mandatory
+    get
+      declare  [
+:f1 pls_integer; /* netw_id */
+:f2 pls_integer; /* meta_msg_id */
+:f3 msg_extl#.t_msg_rec;
+:f4 msg_extl#.t_msg_prty_rec;
+]
+      before   [
+begin
+:f1 := netw#.netw_id(:p1);
+:f2 := :p3;
+
+:f3.msg := :p4;
+
+:f4.netw_id         := :f1;
+:f4.msg_type        := :p2;
+:f4.msg_dlv_type_id := msg_out_dlv_rule#.msg_out_dlv_type_id(i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.addr            := msg_out_dlv_rule#.addr               (i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.consmr          := msg_out_dlv_rule#.consmr             (i_netw_id => :f1, i_meta_msg_id => :f2);
+:f4.prio            := msg_out_dlv_rule#.prio               (i_netw_id => :f1, i_meta_msg_id => :f2);
+
+msg_extl#.netw#put_out_msg(
+  x_msg_prty_rec => :f4
+ ,i_msg_rec      => :f3
+);
+end;
+]
+      value    [:f4.msg_id]
+
+  ----------------------------------------------------------------------------
+  -- SEND EMAIL
+  ----------------------------------------------------------------------------
+  send_email action obsolete
+    substitute [session.msg_mgr.send_email]
+    descn      [Send email message to the given destination list (";"-separated)]
+    param      dest_list /*p1*/ text mandatory
+    param      subject /*p2*/ text mandatory
+    param      body_text /*p3*/ text mandatory
+    do
+      stmt     [
+email#.send(
+  i_dest_list       => :p1
+ ,i_subject         => :p2
+ ,i_text            => :p3
+);
+]
+
+  ----------------------------------------------------------------------------
+  send_email_smtp action obsolete
+    substitute [session.msg_mgr.send_email_smtp]
+    descn      [Send email through external Mail-Gateway to the given destination]
+    param      sender /*p1*/ text mandatory /* eMail address of the sender */
+    param      dest /*p2*/ text mandatory /* destination eMail address */
+    param      subject /*p3*/ text mandatory
+    param      body_text /*p4*/ text mandatory
+    do
+      stmt     [
+email#.send_smtp(
+  i_sender    => :p1
+ ,i_dest      => :p2
+ ,i_subject   => :p3
+ ,i_body      => :p4
+);
+]
+
+  ----------------------------------------------------------------------------
+  -- DEBUG STATEMENTS
+  ----------------------------------------------------------------------------
+  is_debug boolean -- @todo obsolete
+    -- @todo substitute   [session.log_mgr.is_debug]
+    descn      [Is debugging enabled for current session?]
+    get
+      value    [case when co_err.get_debug then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  debug action -- @todo obsolete
+    -- @todo substitute   [session.log_mgr.debug]
+    descn      [Put the given context (and debug text) to the error log (unconditionally)]
+    param      context text mandatory
+    param      dbg_txt text
+    do
+      stmt     [k.debug(i_context => :p1, i_dbg_txt => :p2);]
+
+  ----------------------------------------------------------------------------
+  info action obsolete
+    substitute [session.log_mgr.info]
+    descn      [Put the given context, debug text and item id to the error log as info]
+    param      context text mandatory
+    param      dbg_txt text
+    param      item_id number
+    do
+      stmt     [k.log#.info(i_context => :p1, i_msg => :p2, i_log_trig_item_id => :p3);]
+
+  ----------------------------------------------------------------------------
+  warn action obsolete
+    substitute [session.log_mgr.warn]
+    descn      [Put the given context, debug text and item id to the error log  as warning]
+    param      context text mandatory
+    param      dbg_txt text
+    param      item_id number
+    do
+      stmt     [k.log#.warn(i_context => :p1, i_msg => :p2, i_log_trig_item_id => :p3);]
+
+  ----------------------------------------------------------------------------
+  alert action obsolete
+    substitute [session.log_mgr.alert]
+    descn      [Put the given context, debug text and item id to the error log  as alert]
+    param      context text mandatory
+    param      dbg_txt text
+    param      item_id number
+    do
+      stmt     [k.log#.alert(i_context => :p1, i_msg => :p2, i_log_trig_item_id => :p3);]
+
+  ----------------------------------------------------------------------------
+  -- ACKNOWLEDGE LOG ENTRY
+  ----------------------------------------------------------------------------
+  ack_log_entry action obsolete
+    substitute [session.log_mgr.ack_log_entry]
+    descn      [mark log entries as acknowledged]
+    param      log_id number
+    param      task_id number
+    param      follow_chain boolean
+    do
+      stmt     [
+  log#.log#ack_entry(
+    :p1
+   ,:p2
+   ,nvl(:p3 = '+', true)
+  );
+]
+
+  ----------------------------------------------------------------------------
+  last_log_id number obsolete
+    substitute [session.log_mgr.last_log_id]
+    descn      [ID of last entry in system log current session]
+    param      get_init boolean
+      default  "'+'"
+    get
+      value    [
+  case when nvl(:p1 = '+', true) then
+    log#.log#init_log_id(co_err.last_err_log_id)
+  else
+    co_err.last_err_log_id
+  end
+]
+
+  ----------------------------------------------------------------------------
+  last_log_msg text obsolete
+    substitute [session.log_mgr.last_log_msg]
+    descn      [Message (context) of last system log entry in current session]
+    get
+      value    [log#.err#get_init_ctx(co_err.last_err_log_id, false)]
+
+  ----------------------------------------------------------------------------
+  last_err_stack text obsolete
+    substitute [session.log_mgr.last_err_stack]
+    descn      [Error Stack of last system log entry in current session]
+    get
+      value    [log#.err#get_init_err_stack(co_err.last_err_log_id)]
+
+  ----------------------------------------------------------------------------
+  ora_excp_nr number obsolete
+    substitute [session.log_mgr.ora_excp_nr]
+    descn      [Oracle exception sqlcode (only valid within an exception handler)]
+    get
+      value    [sqlcode]
+
+  ----------------------------------------------------------------------------
+  ora_excp_msg text obsolete
+    substitute [session.log_mgr.ora_excp_msg]
+    descn      [Oracle exception error message (only valid within an exception handler)]
+    get
+      value    [sqlerrm]
+
+  ----------------------------------------------------------------------------
+  avq_excp_nr number obsolete
+    substitute [session.log_mgr.avq_excp_nr]
+    descn      [Avaloq exception code (only valid within an exception handler)]
+    get
+      value    [co_err.err_code]
+
+  ----------------------------------------------------------------------------
+  avq_excp_msg text obsolete
+    substitute [session.log_mgr.avq_excp_msg]
+    descn      [Avaloq exception error message (only valid within an exception handler)]
+    get
+      value    [co_err.err_msg]
+
+  ----------------------------------------------------------------------------
+  -- ORDER VALIDATION ERRORS AND OVERRIDES
+  ----------------------------------------------------------------------------
+  excp_list list of session_err obsolete
+    substitute [session.log_mgr.excp_list]
+    descn      [List of order validation errors and overrides. List will only be filled when
+do_defer is used in doc.raise_ui_err or doc.chk_override in the order validation.]
+    param      seq_nr number
+      descn    [Sequence number of error]
+    label      [LABEL.ERR]
+    count
+      value    [co_err.errlist#defer_err_cnt]
+    get
+      value    [:p1]
+    list
+      stmt     [
+for i in 1 .. co_err.errlist#defer_err_cnt loop
+  list#add(i);
+end loop;
+]
+
+  ----------------------------------------------------------------------------
+  -- UI Override Status
+  ----------------------------------------------------------------------------
+  is_ovr_retry_req boolean
+    descn      [Determines whether current request is an override retry request.
+                This functionality must be used with extreme care, since this
+                value may change in an unforeseeable way when other overrides are implemented.]
+    get
+      value    [case when ui#.is_cnf_retry(doc_tab_override#.ovr_nr) then '+' else '-' end]
+
+  ----------------------------------------------------------------------------
+  -- UI STUFF
+  ----------------------------------------------------------------------------
+  clear_ui action obsolete
+    substitute [session.ui_mgr.clear_ui]
+    descn      [Send the clear command to the user interface]
+    do
+      stmt     [ui#.clear;]
+
+  ----------------------------------------------------------------------------
+  put_client_info action obsolete
+    substitute [session.ui_mgr.put_client_info]
+    descn      [The given info field will be displayed on the client]
+    param      info text mandatory
+    do
+      stmt     [ui#.add_info_msg(:p1);]
+
+  ----------------------------------------------------------------------------
+  put_client_url action obsolete
+    substitute [session.ui_mgr.put_clt_uri]
+    descn      [Sends the given url to the client]
+    param      data text mandatory
+    do
+      stmt     [ui#.open_extl_url(:p1);]
+
+  ----------------------------------------------------------------------------
+  open_doc action obsolete
+    substitute [session.ui_mgr.open_doc]
+    descn      [Force client to open the given order]
+    param      doc_id id mem_doc
+    do
+      stmt     [ui#.open_doc(:p1);]
+
+  ----------------------------------------------------------------------------
+  open_app action obsolete
+    substitute [session.ui_mgr.open_app]
+    descn      [Open tab in application]
+    param      app text mandatory
+    param      tab text mandatory
+    do
+      stmt     [ui#.open_app(:p1, :p2);]
+
+  ----------------------------------------------------------------------------
+  open_appl action obsolete
+    substitute [session.ui_mgr.open_appl]
+    descn      [Open a foreign application]
+    param      appl text mandatory
+    do
+      stmt     [ui#.open_appl(:p1);]
+
+  ----------------------------------------------------------------------------
+  ora_sid number
+    get
+      value    [ora_session#.c_sess#sid]
+
+  ----------------------------------------------------------------------------
+  ora_serial number
+    get
+      value    [ora_session#.session#serial#]
+
+  ----------------------------------------------------------------------------
+  ora_instn_id number
+    get
+      value    [ora_session#.c_sess#inst_id]
+
+end memory structure
