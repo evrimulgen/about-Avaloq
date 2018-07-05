@@ -4,12 +4,14 @@
 --
 select
 -- src_id,
+   src_type,
    src_name,
    src_text
 from (
   select
     src.id       src_id,
     src.name     src_name,
+    srct.intl_id src_type,
     srch.text    src_text,
     row_number() over (partition by srch.src_id order by srch.seq_nr desc) rn
   from
