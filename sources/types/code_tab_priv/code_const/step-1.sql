@@ -14,6 +14,9 @@ to_clob(q'{
 
 code table code_const_type
 
+  …  -- Snipped, this part is already in a source and needs
+     -- to be copied.
+
   row tq84$tq84
     user_id         "TQ84"
     naming
