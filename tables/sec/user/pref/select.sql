@@ -1,10 +1,14 @@
 select
-   usr.name                 user_name,
-   pft.name                 preference_type,
-   prf.val                  preference_value 
+   usr.name,
+   usr.oracle_user,
+-- prf.pref_type_id,
+   prt.name           pref_type,
+   prf.val            pref_val,
+   prf.clob_val       some_xml,
+   prf.bu_id          pref_bu
 from
-   sec_user_pref  prf                               join
-   sec_user       usr on prf.sec_user_id  = usr.id  join
-   code_pref_type pft on prf.pref_type_id = pft.id
+   sec_user       usr                               join
+   sec_user_pref  prf on usr.id = prf.sec_user_id   join
+   code_pref_type prt on prt.id = prf.pref_type_id
 where
-   sysdate between usr.start_date and nvl(usr.close_date, sysdate);
+   lower(usr.name) like '%nyffenegger%';
