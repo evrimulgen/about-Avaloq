@@ -1,4 +1,5 @@
 select
+<<<<<<< HEAD
    out_text#.text('TASK_DEF.' || tskdef.obj_id)  task_name,            -- Compare with function out_text_def_cnv
    tskdef.meta_out_id                            task_id,              -- This meta out id seems to be what the Avaloq docu refers to as task id. Compare with meta_proc_id.
    tskdef.descn,
