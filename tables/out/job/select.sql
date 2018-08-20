@@ -1,0 +1,61 @@
+select
+   ouj.id,
+   ouj.timestamp,
+   ouj.userstamp,
+-- ouj.out_status_id,
+   sts.name                 out_status,
+   ouj.prio,
+   ouj.meta_out_id          out_job_meta_out_id,     -- Seems to be the obj_id of a task def.
+   tkd.meta_out_id          task_def_meta_out_id,
+   tkd.descn                task_def_descn,
+-- tkd.meta_proc_id         task_def_meta_proc_id,
+   mtp.package              meta_proc_package,
+   mtp.name                 meta_proc_name,
+   mtp.type                 meta_proc_type,
+   tkn.name                 task_def_name,
+   ouj.meta_out_templ_id,
+   ouj.date_file_dsp,
+   ouj.sec_pref_id,
+   ouj.group_by,
+   ouj.order_by,
+   ouj.bu_id,
+   ouj.timestamp_start,
+   ouj.timestamp_ins,
+   ouj.meta_out_param_list_id,
+   ouj.cover,
+   ouj.err_stmt,
+   ouj.err_log_id,
+   ouj.stream_file_type_id,
+   ouj.job_id,
+   ouj.idx_parallel_exec_id,
+   ouj.parallel_exec_id,
+   ouj.parallel_exec_nr_prc,
+   ouj.parallel_exec_seq_nr,
+   ouj.idx_prio,
+   ouj.idx_group_by,
+   ouj.list_par_list_id,
+   ouj.parent_task_id,
+   ouj.prcq_id,
+   ouj.instance_hist,
+   ouj.exec_time,
+   ouj.rerun_disabled,
+   ouj.eod_bhv_id,
+   ouj.trace_prof_list_id,
+   ouj.sid,
+   ouj.parallel_max_nr_activ,
+   ouj.master_meta_out_id,
+   ouj.master_meta_out_templ_id,
+   ouj.master_meta_out_param_list_id,
+   ouj.prl_exec_max_nr_prc,
+   ouj.inst_id,
+   ouj.machinestamp,
+   ouj.instance,
+   ouj.prl_exec_slice_cnt
+from
+   out_job           ouj                                     left join
+   code_out_status   sts on ouj.out_status_id = sts.id       left join
+   obj_task_def      tkd on ouj.meta_out_id   = tkd.obj_id   left join
+   obj_name_intl     tkn on ouj.meta_out_id   = tkn.obj_id   left join
+   meta_proc         mtp on tkd.meta_proc_id  = mtp.id
+order by
+   ouj.id desc;
