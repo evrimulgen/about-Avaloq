@@ -1,7 +1,3 @@
---
--- Find the source text of the most recent version
--- of given Avaloq script packages.
---
 select
 -- src_id,
    src_type,
