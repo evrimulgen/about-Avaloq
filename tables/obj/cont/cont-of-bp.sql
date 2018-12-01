@@ -1,6 +1,3 @@
---
--- Find containers that belong to given BPs.
---
 select
   obj.id                obj_id,
   obj_owner_id          obj_owner_id,     -- Always equal to obj_cont.bp_id ?
