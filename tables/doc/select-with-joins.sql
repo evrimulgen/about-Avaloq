@@ -40,7 +40,7 @@ from
                                    ass_nm.lang_id = -1                                        left join
    obj_name        cnt_1_nm     on doc.cont_1_id     = cnt_1_nm.obj_id            and
                                sysdate between cnt_1_nm.date_valid    and
-                                               cnt_1_nm.date_valid_to            and
+                                               cnt_1_nm.date_valid_to             and
                                  cnt_1_nm.lang_id = -1                                        left join
    doc_stex        dsx          on dsx.doc_id        = doc.id                                 left join
    obj_key         cnt_1_key    on doc.cont_1_id = cnt_1_key.obj_id                           left join
