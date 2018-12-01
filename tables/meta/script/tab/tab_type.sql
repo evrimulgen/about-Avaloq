@@ -1,11 +1,3 @@
---
---  The value in tab_type corresponds to the four
---  DDIC types
---    - mem
---    - tab
---    - dtm
---    - pillar
---
 select
 --count(*),
   tab_type
