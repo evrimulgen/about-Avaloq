@@ -1,7 +1,3 @@
---
--- Show all classifications of an object type (e.g. asset) and show
--- their respective group name according to column "order_by_form".
---
 select
    case when nvl(lag(otn.text) over (order by cif.order_by_form), '!') != otn.text then otn.text end classification_group,
    cif.name,
