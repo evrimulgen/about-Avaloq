@@ -1,7 +1,3 @@
---
---  Apparently, there are user types that need to be licenced and other
---  users that don't need to be licenced. Compare with table code_user_lic_type.
---
 select
    id,
    intl_id,
