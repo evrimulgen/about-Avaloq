@@ -1,7 +1,3 @@
---
--- Find the doc ids (orders) that pertain to a specific
--- position.
---
 select
    doc.order_nr             doc_order_nr,
    evt.doc_id,
