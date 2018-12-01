@@ -11,4 +11,4 @@ from
    sec_user_pref  prf on usr.id = prf.sec_user_id   join
    code_pref_type prt on prt.id = prf.pref_type_id
 where
-   lower(usr.name) like '%nyffenegger%';
+   lower(usr.name) like '%hunziker%';
