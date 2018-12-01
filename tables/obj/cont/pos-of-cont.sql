@@ -1,6 +1,3 @@
---
---  Find positions (assets) within a container.
---
 select
   pos.id             pos_id,
   --pos_key.*,
