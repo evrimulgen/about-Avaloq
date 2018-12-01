@@ -1,6 +1,3 @@
---
--- ts_mkt: get historical market price data for assets.
---
 select
    mkt.mkt_timestamp,
    mkt.eff_date,
